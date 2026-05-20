@@ -78,9 +78,6 @@ Print_Answer:
     MOV CX, Len_Correct
 	MOV DX, Len_Input
 
-	CMP CX, DX
-	JNE Incorrect_Password
-
 	CLD
 	REPE CMPSB						; DS:[SI] and ES:[DI], SI++ and DI++
     JE Correct_Password_User
@@ -140,29 +137,18 @@ Input_Password:
 
 	CALL Calculate_Offset      ; ES:[DI] position for input
 
-    XOR BP, BP                 ; counter
-    MOV BX, 66                 ; max len
+	XOR BP, BP                 ; counter
 
 	Process_Symbol:
 
-		CMP BP, BX                 	; if max len
-		JE Not_Print_Pointer
-
-		MOV ES:[DI], 0B05Fh
-
-		Not_Print_Pointer:
-
 		MOV AH, 00h
-		INT 16h                    	; AL = symbol, AH = key scan code
+		INT 16h                    ; AL = symbol, AH = key scan code
 
-		CMP AL, 0Dh                	; if enter
+		CMP AL, 0Dh                ; if enter
 		JE Finish_Input_Password
 
-		CMP AL, 08h                	; if delete
+		CMP AL, 08h                ; if delete
 		JE Delete
-
-		CMP BP, BX                 	; if max len
-		JE Error_Len
 
 		MOV BYTE PTR DS:[SI + BP], AL	; saved symbol in buffer
 		INC BP
@@ -171,60 +157,19 @@ Input_Password:
 		STOSW						; ES:[DI] = AX, DI += 2
 		JMP Process_Symbol
 
-		Delete:
+	Delete:
 
-			CMP BP, 0
-			JE Process_Symbol
+		CMP BP, 0
+		JE Process_Symbol
 
-			DEC BP
+		DEC BP
+		SUB DI, 2
+		MOV AX, 3020h
+		STOSW
+		STOSW
+		SUB DI, 4
+		JMP Process_Symbol
 
-			SUB DI, 2
-			MOV AX, 3020h
-			STOSW					; ES:[DI] = AX, DI += 2
-			STOSW
-
-			SUB DI, 4
-
-			JMP Process_Symbol
-
-	Error_Len:
-
-		MOV AH, 7
-		MOV AL, 7
-		MOV CX, 66
-		MOV BX, 7020h
-		CALL Print_Line
-
-		ADD AL, 1
-		CALL Print_Line
-
-		MOV CX, Len_Text_3
-		MOV SI, offset Text_3
-		CALL Record_String
-
-		Expectation_1:
-			MOV AH, 08h				; function take one click
-			INT 21h					;
-			CMP AL, 13				; comparison with "Enter"
-			JNE Expectation_1		;
-
-
-		MOV AH, 7
-		MOV AL, 7
-		MOV CX, Len_Text_2
-		MOV SI, offset Text_2
-		CALL Record_String
-
-		ADD AL, 1
-		MOV CX, 66
-		MOV BX, 3020h
-		CALL Print_Line
-
-		RESTORE_REGS
-
-		STC
-
-		RET
 
 	Finish_Input_Password:
 
@@ -625,8 +570,6 @@ Data:
 	Array_Values  dw 4000 dup (0)
 	Saved_Counter dw 0
 
-	Correct_Password db '123454321'
-	Len_Correct      equ $ - Correct_Password
 
 	Text_1     db 'Password check'
 	Len_Text_1 equ $ - Text_1
@@ -639,8 +582,12 @@ Data:
 	Text_5     db 'Access denied'
 	Len_Text_5 equ $ - Text_5
 
-	Password_Buffer db 66 dup (0)
-	Len_Input       dw 0
+	Password_Buffer  db 20 dup (0)
+	Correct_Password db '123454321'
+
+	Len_Input        dw 0
+	Len_Correct      equ 9
+
 
 
 
