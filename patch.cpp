@@ -100,7 +100,7 @@ int Patch_File_Com (const char* Name_File, const unsigned char* Search_Bytes, co
 
 int main ()
 {
-    const char* Name_File = "CRACKM~1.COM";
+    const char* Name_File = "Crack_Fil.com";
 
     unsigned char Search_Bytes[] = {0x75, 0x06};
     unsigned char Replace_Bytes[] = {0xEB, 0x06};
