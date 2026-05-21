@@ -108,9 +108,9 @@ int main ()
     size_t Search_Len = sizeof (Search_Bytes);
     size_t Replace_Len = sizeof (Replace_Bytes);
 
-    int A = Patch_File_Com (Name_File, Search_Bytes, Search_Len, Replace_Bytes, Replace_Len);
+    int Result = Patch_File_Com (Name_File, Search_Bytes, Search_Len, Replace_Bytes, Replace_Len);
 
-    if (A == 0)
+    if (Result)
     {
         printf ("Patch applied successfully!\n");
         return 0;
